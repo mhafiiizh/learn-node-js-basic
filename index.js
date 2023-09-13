@@ -1,5 +1,6 @@
 const fs = require("fs");
 const http = require("http");
+const { json } = require("stream/consumers");
 const url = require("url");
 
 // <-- FILE DENGAN MODULE FS -->
@@ -35,6 +36,20 @@ const server = http.createServer((req, res) => {
         data: "Ini product",
       })
     );
+  } else if (pathName == "/api") {
+    const data = fs.readFileSync(`${__dirname}/dev-data/data.json`);
+    res.writeHead(200, {
+      "Content-type": "application/json",
+    });
+    res.end(data);
+  } else if (pathName == "/overview") {
+    const overviewPage = fs.readFileSync(
+      `${__dirname}/templates/overview.html`
+    );
+    res.writeHead(200, {
+      "Content-type": "text/html",
+    });
+    res.end(overviewPage);
   } else {
     res.writeHead(404, {
       "Content-type": "text/html",
