@@ -26,30 +26,64 @@ const url = require("url");
 // console.log("Halo menunggu file start.txt ya?");
 
 // <-- SERVER DENGAN HTTP -->
+const replaceTemplate = (template, product) => {
+  let output = template.replace(/{%PRODUCTNAME%}/g, product.productName);
+  output.replace = template.replace(/{%IMAGE%}/g, product.image);
+  output.replace = template.replace(/{%FROM%}/g, product.from);
+  output.replace = template.replace(/{%NUTRIENTS%}/g, product.nutrients);
+  output.replace = template.replace(/{%QUANTITY%}/g, product.quantity);
+  output.replace = template.replace(/{%PRICE%}/g, product.price);
+  output.replace = template.replace(/{%DESCRIPTION%}/g, product.description);
+  output.replace = template.replace(/{%ID%}/g, product.id);
+
+  return output;
+};
+
+const data = fs.readFileSync(`${__dirname}/dev-data/data.json`, "utf-8");
+const dataObj = JSON.parse(data);
+const overviewPage = fs.readFileSync(
+  `${__dirname}/templates/overview.html`,
+  "utf-8"
+);
+const productTemplate = fs.readFileSync(
+  `${__dirname}/templates/product.html`,
+  "utf-8"
+);
+const productCardTemplate = fs.readFileSync(
+  `${__dirname}/templates/template-card.html`,
+  "utf-8"
+);
+
 const server = http.createServer((req, res) => {
   const pathName = req.url;
+
+  // <-- HELLO PAGE -->
   if (pathName === "/hello") {
     res.end("Halo FSW 2");
+    // <-- PRODUCT PAGE -->
   } else if (pathName === "/product") {
     res.end(
       JSON.stringify({
         data: "Ini product",
       })
     );
+    // <-- API PAGE -->
   } else if (pathName == "/api") {
-    const data = fs.readFileSync(`${__dirname}/dev-data/data.json`);
     res.writeHead(200, {
       "Content-type": "application/json",
     });
     res.end(data);
+    // <-- OVERVIEW PAGE -->
   } else if (pathName == "/overview") {
-    const overviewPage = fs.readFileSync(
-      `${__dirname}/templates/overview.html`
-    );
     res.writeHead(200, {
       "Content-type": "text/html",
     });
-    res.end(overviewPage);
+    const productCardHTML = dataObj.map((el) =>
+      replaceTemplate(productCardTemplate, el)
+    );
+    const output = overviewPage.replace("{%PRODUCT_CARDS%}", productCardHTML);
+    res.end(output);
+    // NOT FOUND PAGE
   } else {
     res.writeHead(404, {
       "Content-type": "text/html",
